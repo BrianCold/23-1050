@@ -8,7 +8,16 @@ import csv
 import re
 import contractions
 import string
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+import nltk
 
+nltk.download('stopwords')
+nltk.download('wordnet')
+
+# Define the text cleaning function
+stop_words = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description= "Creating train, validation and test datasets")
@@ -45,29 +54,46 @@ def clean_sd_data(text):
     return text
 
 def clean_sa_data(text):
+    # Remove mentions
+    text = re.sub(r'@\w+', '', text)
+    # Remove URLs
+    text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
+    # Remove special characters and numbers
+    text = re.sub(r'[^A-Za-z\s]', '', text)
+    # Convert to lowercase
+    text = text.lower()
+    # Remove stop words and lemmatize
+    words = text.split()
+    words = [lemmatizer.lemmatize(word) for word in words if word not in stop_words]
 
-    pass
+    return ' '.join(words)
 
 def main(args: argparse.Namespace):
-    # nltk.download('stopwords')
-    # nltk.download('wordnet')
     
     # #read the sentiment analysis datasets
     # reddit_df = pd.read_csv(os.path.join(args.data_dir, "Reddit_Data.csv"))
     # twitter_df = pd.read_csv(os.path.join(args.data_dir, "Twitter_Data.csv"))
     # # Rename columns of twitter_df to match reddit_df
     # twitter_df = twitter_df.rename(columns={'clean_text': 'clean_comment'})
-    # #convert data to string and replace nan strings with empty strings
+    # #convert data to string and replace nan strings with empty strings (eda)
     # reddit_df['clean_comment'] = reddit_df['clean_comment'].astype(str).replace('nan', '')
     # twitter_df['clean_comment'] = twitter_df['clean_comment'].astype(str).replace('nan', '')
+    # # print(reddit_df.head())
+    # # print(reddit_df.isnull().sum())
+    # # print(twitter_df.head())
+    # # print(twitter_df.isnull().sum())
     # #clean input data
-    # reddit_df['clean_comment'] = reddit_df['clean_comment'].apply(clean_text)
-    # twitter_df['clean_comment'] = twitter_df['clean_comment'].apply(clean_text)
+    # reddit_df['clean_comment'] = reddit_df['clean_comment'].apply(clean_sa_data)
+    # twitter_df['clean_comment'] = twitter_df['clean_comment'].apply(clean_sa_data)
     # #remove empty data
-    # reddit_df = reddit_df[reddit_df['clean_comment'].str.strip().astype(bool)]
-    # twitter_df = twitter_df[twitter_df['clean_comment'].str.strip().astype(bool)]
+    # reddit_df = reddit_df[~reddit_df['clean_comment'].isnull() & (reddit_df['clean_comment'] != '')].reset_index(drop=True)
+    # twitter_df = twitter_df[~twitter_df['clean_comment'].isnull() & (twitter_df['clean_comment'] != '')].reset_index(drop=True)
+    # reddit_df = reddit_df[~reddit_df['category'].isnull() & (reddit_df['category'] != '')].reset_index(drop=True)
+    # twitter_df = twitter_df[~twitter_df['category'].isnull() & (twitter_df['category'] != '')].reset_index(drop=True)
     # #combine the sentiment analysis datasets
-    # sa_df = pd.concat([reddit_df,twitter_df], axis=0, ignore_index=True)
+    # # sa_df = pd.concat([reddit_df,twitter_df], axis=0, ignore_index=True)
+    # sa_df = twitter_df
+    # sa_df['category'] = sa_df['category'].replace(-1.0, 2.0)
     # #split data into train, validation and test
     # x_train, x_temp, y_train, y_temp = train_test_split(sa_df['clean_comment'], sa_df['category'],test_size=0.2, random_state=42)
     # x_val, x_test, y_val, y_test = train_test_split(x_temp, y_temp,test_size=0.5, random_state=42)
@@ -86,7 +112,7 @@ def main(args: argparse.Namespace):
     headlines = []
     labels = []
 
-    for entry in parse_data('data/Sarcasm_Headlines_Dataset.json'):
+    for entry in parse_data('data/Sarcasm_Headlines_Dataset_v2.json'):
         headlines.append(entry['headline'])
         labels.append(entry['is_sarcastic'])
     x_train, x_temp, y_train, y_temp = train_test_split(headlines, labels, test_size=0.2, random_state=42)

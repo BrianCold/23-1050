@@ -1,0 +1,43 @@
+sd_data:
+  train_data: 'sd_data/x_train.csv'
+  train_labels: 'sd_data/y_train.csv'
+  val_data: 'sd_data/x_val.csv'
+  val_labels: 'sd_data/y_val.csv'
+  test_data: 'sd_data/x_test.csv'
+  test_labels: 'sd_data/y_test.csv'
+
+sa_data:
+  train_data: 'sa_data/x_train.csv'
+  train_labels: 'sa_data/y_train.csv'
+  val_data: 'sa_data/x_val.csv'
+  val_labels: 'sa_data/y_val.csv'
+  test_data: 'sa_data/x_test.csv'
+  test_labels: 'sa_data/y_test.csv'
+
+models:
+  sd_model
+
+sd_params:
+  n_classes: 2
+  lr: 0.000015
+  epochs: 13
+  batch_size: 16
+  weight_decay: 0.04
+  hidden_size: 64
+
+sa_params:
+  n_classes: 3
+  lr: 0.000015
+  epochs: 10
+  batch_size: 16
+  weight_decay: 0.03
+  hidden_size: 64
+
+trf_lrg_params:
+  n_classes: 3
+  lr: 0.00003
+  epochs: 15
+  batch_size: 16
+  weight_decay: 0.04
+  a: 1.7
+  b: 0.3
